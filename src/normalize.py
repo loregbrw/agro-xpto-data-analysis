@@ -68,7 +68,7 @@ dim_urf = dim_urf.drop_duplicates()
 invalid_pais = (~fact_exports["CO_PAIS"].isin(dim_pais["CO_PAIS"])).sum()
 invalid_ncm = (~fact_exports["CO_NCM"].isin(dim_ncm["CO_NCM"])).sum()
 
-fact_exports.to_csv(PROCESSED / "fact_exportacoes.csv", index=False)
+fact_exports.to_csv(PROCESSED / "fact_exported.csv", index=False)
 
 dim_ncm.to_csv(PROCESSED / "dim_ncm.csv", index=False)
 dim_pais.to_csv(PROCESSED / "dim_pais.csv", index=False)
