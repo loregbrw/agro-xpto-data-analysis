@@ -1,9 +1,15 @@
 import requests
 import pandas as pd
-from pathlib import Path 
+from pathlib import Path
+from rich.console import Console
+from rich.panel import Panel
+
+console = Console()
 
 RAW = Path("data/raw")
 RAW.mkdir(parents=True, exist_ok=True)
+
+console.print(Panel.fit("[bold cyan]Downloading USD/BRL Exchange Rates[/bold cyan]"))
 
 url = "https://api.bcb.gov.br/dados/serie/bcdata.sgs.1/dados"
 
@@ -13,12 +19,14 @@ params = {
     "dataFinal": "31/12/2025"
 }
 
-print("Dowload USD/BRL data from Banco Central...")
+console.log("[yellow]Requesting exchange rate data from Banco Central...[/yellow]")
 
 response = requests.get(url, params=params)
 response.raise_for_status()
 
 data = response.json()
+
+console.log("[yellow]Processing dataset...[/yellow]")
 
 df = pd.DataFrame(data)
 
@@ -31,10 +39,14 @@ df = df.rename(columns={
 })
 
 df = df.sort_values("date")
+
 output = RAW / "usd_brl_daily.csv"
+
+console.log("[yellow]Saving dataset...[/yellow]")
 
 df.to_csv(output, index=False)
 
-print("Exchange rate dataset created!")
-print(f"Saved to: {output}")
-print(f"Rows: {len(df)}")
+console.print(Panel.fit("[bold green]Exchange rate dataset created successfully![/bold green]"))
+
+console.log(f"[bold blue]Saved to:[/bold blue] {output}")
+console.log(f"[bold blue]Rows:[/bold blue] {len(df)}")

@@ -1,18 +1,24 @@
 import subprocess
+from rich.console import Console
+from rich.panel import Panel
 
-print("Downloading data...")
+console = Console()
+
+console.print(Panel.fit("[bold cyan]Agro XPTO Data Pipeline[/bold cyan]"))
+
+console.log("[bold yellow]Downloading data...[/bold yellow]")
 subprocess.run(["python", "src/download_data.py"], check=True)
 
-print("Running ingest...")
+console.log("[bold yellow]Running ingest...[/bold yellow]")
 subprocess.run(["python", "src/ingest.py"], check=True)
 
-print("Running normalize...")
+console.log("[bold yellow]Running normalize...[/bold yellow]")
 subprocess.run(["python", "src/normalize.py"], check=True)
 
-print("Geting USD / BRL values from Banco Central...")
+console.log("[bold yellow]Getting USD/BRL values from Banco Central...[/bold yellow]")
 subprocess.run(["python", "src/exchange_rate.py"], check=True)
 
-print("Linking USD / BRL values...")
+console.log("[bold yellow]Linking USD/BRL values...[/bold yellow]")
 subprocess.run(["python", "src/link_usd_with_brl.py"], check=True)
 
-print("Pipeline finished!")
+console.print(Panel.fit("[bold green]Pipeline finished successfully![/bold green]"))

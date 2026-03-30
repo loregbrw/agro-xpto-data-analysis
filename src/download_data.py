@@ -1,10 +1,18 @@
 import requests
 from pathlib import Path
+from rich.console import Console
+from rich.panel import Panel
+from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn
+
+console = Console()
 
 RAW = Path("data/raw")
 PROCESSED = Path("data/processed")
+
 RAW.mkdir(parents=True, exist_ok=True)
 PROCESSED.mkdir(parents=True, exist_ok=True)
+
+console.print(Panel.fit("[bold cyan]Downloading Agro XPTO datasets[/bold cyan]"))
 
 files = {
     # exportações
@@ -24,28 +32,36 @@ files = {
     "URF.csv": "https://balanca.economia.gov.br/balanca/bd/tabelas/URF.csv",
 }
 
-for filename, url in files.items():
+with Progress(
+    SpinnerColumn(),
+    TextColumn("[bold yellow]{task.description}"),
+    BarColumn(),
+    console=console
+) as progress:
 
-    path = RAW / filename
+    for filename, url in files.items():
 
-    if path.exists():
-        print(f"{filename} already exists, skipping...")
-        continue
+        path = RAW / filename
 
-    print(f"Downloading {filename}...")
+        if path.exists():
+            console.log(f"[blue]{filename} already exists, skipping[/blue]")
+            continue
 
-    try:
-        with requests.get(url, stream=True, verify=False) as r:
-            r.raise_for_status()
+        task = progress.add_task(f"Downloading {filename}", total=None)
 
-            with open(path, "wb") as f:
-                for chunk in r.iter_content(chunk_size=8192):
-                    if chunk:
-                        f.write(chunk)
+        try:
+            with requests.get(url, stream=True, verify=False) as r:
+                r.raise_for_status()
 
-        print(f"{filename} downloaded successfully!")
+                with open(path, "wb") as f:
+                    for chunk in r.iter_content(chunk_size=8192):
+                        if chunk:
+                            f.write(chunk)
 
-    except Exception as e:
-        print(f"Error downloading {filename}: {e}")
+            progress.update(task, completed=1)
+            console.log(f"[green]{filename} downloaded successfully[/green]")
 
-print("Download complete!")
+        except Exception as e:
+            console.log(f"[red]Error downloading {filename}: {e}[/red]")
+
+console.print(Panel.fit("[bold green]Download complete![/bold green]"))
